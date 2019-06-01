@@ -1,12 +1,6 @@
-#!/usr/bin/love
-
---[[
-	Basic configuration file for any Love2D file.
-
-	love.conf is loaded before any other Love function.
-
-	@author Kyle Chapman
---]]
+-- conf.lua
+--
+-- @about Describes the configuration of the game.
 
 -- @brief Config function called before any other function.
 -- @param t Table holding configuration settings.
@@ -20,7 +14,7 @@ function love.conf(t)
 	t.audio.mixwithsysem = true
 
 	-- window
-	t.window.title = "Introduction to Game Basics"
+	t.window.title = "Game Basics"
 	t.window.icon = nil
 	t.window.width = 800
 	t.window.height = 600
