@@ -4,8 +4,12 @@
 
 -- Load all items needed
 function love.load(arg)
+	-- create new world with no gravity
+	world = love.physics.newWorld(0, 0, true)
+
 	playerDim = 50	-- dimensions for the player img
 	crosshairDim = 35
+	paused = false
 
 	-- player table
 	player = {
@@ -32,8 +36,32 @@ function love.load(arg)
 	love.mouse.setVisible(false)
 end
 
+-- Called when a mouse button is pressed
+function love.mousepressed(x, y, button, istouch)
+	if button == 1 then
+		print('Shoot')
+	elseif button == 2 then
+		print('Aim')
+	elseif button == 3 then
+		print('Middle Mouse')
+	end
+end
+
+-- Checks for key presses
+function love.keypressed(key)
+	if key == 'p' then
+		paused = not paused
+	end
+end
+
 -- Update with respect to delta-time (dt)
 function love.update(dt)
+	if paused then
+		return
+	end
+
+	world:update(dt)
+
 	-- quiting the game
 	if love.keyboard.isDown('escape') then
 		love.event.quit()
@@ -69,5 +97,10 @@ function love.draw(dt)
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
 	love.graphics.draw(player.img, player.x, player.y, 0, player.scale, player.scale)
 	love.graphics.draw(crosshair.img, x, y, 0, crosshair.scale, crosshair.scale)
+
+	if paused then
+		love.graphics.print("PAUSED", 300, 20)
+	end
+
 	love.graphics.print("FPS: " .. tostring(FPS), 10, 10)
 end
