@@ -10,6 +10,9 @@ function love.load(arg)
 	playerDim = 50	-- dimensions for the player img
 	crosshairDim = 35
 
+	bulletWidth = 8
+	bulletHeight = 8
+
 	paused = false
 	bulletSpeed = 200
 
@@ -56,12 +59,26 @@ function love.mousepressed(x, y, button)
 		local bulletDx = bulletSpeed * math.cos(angle)
 		local bulletDy = bulletSpeed * math.sin(angle)
 
-		table.insert(bullets, {x = startX, y = startY, dx = bulletDx, dy = bulletDy})
+		-- insert bullets into table
+		table.insert(bullets, {
+			x = startX,
+			y = startY,
+			dx = bulletDx,
+			dy = bulletDy
+		})
 	elseif button == 2 then
 		print('Aim')
 	elseif button == 3 then
 		print('Middle Mouse')
 	end
+end
+
+-- checks for collision of 2 entities
+function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
+	return	x1 < x2 + w2 and
+			x2 < x1 + w1 and
+			y1 < y2 + h2 and
+			y2 < y1 + h1
 end
 
 -- Pauses game on focus lost
@@ -124,6 +141,7 @@ function love.draw(dt)
 
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
 	love.graphics.draw(player.img, player.x, player.y, 0, player.scale, player.scale)
+	love.graphics.rectangle("line", 500, 500, 30, 30)
 
 	love.graphics.push("all")
 	love.graphics.setColor(255 / 255, 87 / 255, 34 / 255)
@@ -133,7 +151,12 @@ function love.draw(dt)
 		elseif v.y > love.graphics.getHeight() or v.y < 0 then
 			table.remove(bullets, k)
 		else
-			love.graphics.rectangle("fill", v.x, v.y, 8, 8)
+			love.graphics.rectangle("fill", v.x, v.y, bulletWidth, bulletHeight)
+		end
+
+		-- collision detection
+		if checkCollision(v.x, v.y, bulletWidth, bulletHeight, 500, 500, 30, 30) then
+			-- do collision detection
 		end
 	end
 	love.graphics.pop()
