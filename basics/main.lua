@@ -9,7 +9,9 @@ function love.load(arg)
 
 	playerDim = 50	-- dimensions for the player img
 	crosshairDim = 35
+
 	paused = false
+	bulletSpeed = 200
 
 	-- player table
 	player = {
@@ -26,6 +28,8 @@ function love.load(arg)
 		scale = 1
 	}
 
+	bullets = {}
+
 	player.img = love.graphics.newImage('assets/person.png')
 	player.scale = playerDim / player.img:getWidth()
 
@@ -37,14 +41,32 @@ function love.load(arg)
 end
 
 -- Called when a mouse button is pressed
-function love.mousepressed(x, y, button, istouch)
+function love.mousepressed(x, y, button)
 	if button == 1 then
-		print('Shoot')
+		local playerSize = player.scale * player.img:getWidth()
+		local mouseSize = crosshair.scale * crosshair.img:getWidth()
+
+		local startX = player.x + (playerSize / 2)
+		local startY = player.y + (playerSize / 2)
+		local mouseX = x + (mouseSize / 2)
+		local mouseY = y + (mouseSize / 2)
+
+		local angle = math.atan2((mouseY - startY), (mouseX - startX))
+
+		local bulletDx = bulletSpeed * math.cos(angle)
+		local bulletDy = bulletSpeed * math.sin(angle)
+
+		table.insert(bullets, {x = startX, y = startY, dx = bulletDx, dy = bulletDy})
 	elseif button == 2 then
 		print('Aim')
 	elseif button == 3 then
 		print('Middle Mouse')
 	end
+end
+
+-- Pauses game on focus lost
+function love.focus(f)
+	paused = not f
 end
 
 -- Checks for key presses
@@ -87,6 +109,12 @@ function love.update(dt)
 			player.x = player.x + (player.speed * dt)
 		end
 	end
+
+	-- update bullet positions
+	for _, v in ipairs(bullets) do
+		v.x = v.x + (v.dx * dt)
+		v.y = v.y + (v.dy * dt)
+	end
 end
 
 -- Draw updates with respect to delta-time (dt)
@@ -96,6 +124,14 @@ function love.draw(dt)
 
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
 	love.graphics.draw(player.img, player.x, player.y, 0, player.scale, player.scale)
+
+	love.graphics.push("all")
+	love.graphics.setColor(255 / 255, 87 / 255, 34 / 255)
+	for _, v in ipairs(bullets) do
+		love.graphics.rectangle("fill", v.x, v.y, 8, 8)
+	end
+	love.graphics.pop()
+
 	love.graphics.draw(crosshair.img, x, y, 0, crosshair.scale, crosshair.scale)
 
 	if paused then
