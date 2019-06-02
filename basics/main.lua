@@ -8,6 +8,7 @@ function love.load(arg)
 	world = love.physics.newWorld(0, 0, true)
 
 	playerDim = 50	-- dimensions for the player img
+	enemyDim = 30
 	crosshairDim = 35
 
 	bulletWidth = 8
@@ -31,6 +32,14 @@ function love.load(arg)
 		scale = 1
 	}
 
+	-- enemy table
+	enemy = {
+		x = 500,
+		y = 500,
+		img = nil,
+		scale = 1
+	}
+
 	bullets = {}
 
 	player.img = love.graphics.newImage('assets/person.png')
@@ -39,38 +48,47 @@ function love.load(arg)
 	crosshair.img = love.graphics.newImage('assets/ch_w.png')
 	crosshair.scale = crosshairDim / crosshair.img:getWidth()
 
+	enemy.img = love.graphics.newImage('assets/enemy.png')
+	enemy.scale = enemyDim / enemy.img:getWidth()
+
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	love.mouse.setVisible(false)
 end
 
+function shoot(x, y)
+	local playerSize = player.scale * player.img:getWidth()
+	local mouseSize = crosshair.scale * crosshair.img:getWidth()
+
+	local startX = player.x + (playerSize / 2)
+	local startY = player.y + (playerSize / 2)
+	local mouseX = x + (mouseSize / 2)
+	local mouseY = y + (mouseSize / 2)
+
+	local angle = math.atan2((mouseY - startY), (mouseX - startX))
+
+	local bulletDx = bulletSpeed * math.cos(angle)
+	local bulletDy = bulletSpeed * math.sin(angle)
+
+	-- insert bullets into table
+	table.insert(bullets, {
+		x = startX,
+		y = startY,
+		dx = bulletDx,
+		dy = bulletDy
+	})
+end
+
 -- Called when a mouse button is pressed
 function love.mousepressed(x, y, button)
+	--[[
 	if button == 1 then
-		local playerSize = player.scale * player.img:getWidth()
-		local mouseSize = crosshair.scale * crosshair.img:getWidth()
-
-		local startX = player.x + (playerSize / 2)
-		local startY = player.y + (playerSize / 2)
-		local mouseX = x + (mouseSize / 2)
-		local mouseY = y + (mouseSize / 2)
-
-		local angle = math.atan2((mouseY - startY), (mouseX - startX))
-
-		local bulletDx = bulletSpeed * math.cos(angle)
-		local bulletDy = bulletSpeed * math.sin(angle)
-
-		-- insert bullets into table
-		table.insert(bullets, {
-			x = startX,
-			y = startY,
-			dx = bulletDx,
-			dy = bulletDy
-		})
+		shoot(x, y)
 	elseif button == 2 then
 		print('Aim')
 	elseif button == 3 then
 		print('Middle Mouse')
 	end
+	--]]
 end
 
 -- checks for collision of 2 entities
@@ -126,6 +144,10 @@ function love.update(dt)
 			player.x = player.x + (player.speed * dt)
 		end
 	end
+	if love.mouse.isDown('1') then
+		local mx, my = love.mouse.getPosition()
+		shoot(mx, my)
+	end
 
 	-- update bullet positions
 	for k, v in ipairs(bullets) do
@@ -138,10 +160,11 @@ end
 function love.draw(dt)
 	local x, y = love.mouse.getPosition()
 	local FPS = love.timer.getFPS()
+	local enemySize = enemy.scale * enemy.img:getWidth()
 
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
 	love.graphics.draw(player.img, player.x, player.y, 0, player.scale, player.scale)
-	love.graphics.rectangle("line", 500, 500, 30, 30)
+	love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.scale, enemy.scale)
 
 	love.graphics.push("all")
 	love.graphics.setColor(255 / 255, 87 / 255, 34 / 255)
@@ -155,7 +178,8 @@ function love.draw(dt)
 		end
 
 		-- collision detection
-		if checkCollision(v.x, v.y, bulletWidth, bulletHeight, 500, 500, 30, 30) then
+		if checkCollision(v.x, v.y, bulletWidth, bulletHeight,
+				enemy.x, enemy.y, enemySize, enemySize) then
 			-- do collision detection
 		end
 	end
