@@ -111,7 +111,7 @@ function love.update(dt)
 	end
 
 	-- update bullet positions
-	for _, v in ipairs(bullets) do
+	for k, v in ipairs(bullets) do
 		v.x = v.x + (v.dx * dt)
 		v.y = v.y + (v.dy * dt)
 	end
@@ -127,8 +127,14 @@ function love.draw(dt)
 
 	love.graphics.push("all")
 	love.graphics.setColor(255 / 255, 87 / 255, 34 / 255)
-	for _, v in ipairs(bullets) do
-		love.graphics.rectangle("fill", v.x, v.y, 8, 8)
+	for k, v in ipairs(bullets) do
+		if v.x > love.graphics.getWidth() or v.x < 0 then
+			table.remove(bullets, k)
+		elseif v.y > love.graphics.getHeight() or v.y < 0 then
+			table.remove(bullets, k)
+		else
+			love.graphics.rectangle("fill", v.x, v.y, 8, 8)
+		end
 	end
 	love.graphics.pop()
 
