@@ -17,6 +17,10 @@ function love.load(arg)
 	paused = false
 	bulletSpeed = 200
 
+	canShoot = true -- if player can shoot
+	shotWait = 0.3
+	shotTick = 0
+
 	-- player table
 	player = {
 		x = 100,
@@ -55,6 +59,7 @@ function love.load(arg)
 	love.mouse.setVisible(false)
 end
 
+-- adds a bullet into the bullet table
 function shoot(x, y)
 	local playerSize = player.scale * player.img:getWidth()
 	local mouseSize = crosshair.scale * crosshair.img:getWidth()
@@ -78,19 +83,6 @@ function shoot(x, y)
 	})
 end
 
--- Called when a mouse button is pressed
-function love.mousepressed(x, y, button)
-	--[[
-	if button == 1 then
-		shoot(x, y)
-	elseif button == 2 then
-		print('Aim')
-	elseif button == 3 then
-		print('Middle Mouse')
-	end
-	--]]
-end
-
 -- checks for collision of 2 entities
 function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
 	return	x1 < x2 + w2 and
@@ -99,31 +91,14 @@ function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
 			y2 < y1 + h1
 end
 
--- Pauses game on focus lost
-function love.focus(f)
-	paused = not f
-end
-
--- Checks for key presses
-function love.keypressed(key)
-	if key == 'p' then
-		paused = not paused
-	end
-end
-
--- Update with respect to delta-time (dt)
-function love.update(dt)
-	if paused then
-		return
-	end
-
-	world:update(dt)
-
-	-- quiting the game
+-- checks for keystrokes
+function checkInput(dt)
+	-- check for quitting
 	if love.keyboard.isDown('escape') then
 		love.event.quit()
 	end
 
+	-- check for up, down, left and right (or w, s, a and d)
 	if love.keyboard.isDown('up', 'w') then
 		if player.y > 0 then
 			player.y = player.y - (player.speed * dt)
@@ -144,10 +119,49 @@ function love.update(dt)
 			player.x = player.x + (player.speed * dt)
 		end
 	end
+end
+
+-- check for mouse presses
+function checkShooting(dt)
+	-- gets mouse position and shoots in direction
+	mx, my = love.mouse.getPosition()
 	if love.mouse.isDown('1') then
-		local mx, my = love.mouse.getPosition()
-		shoot(mx, my)
+		if canShoot then
+			shoot(mx, my)
+			canShoot = false
+		end
 	end
+
+	-- checks if player can shoot
+	if not canShoot then
+		shotTick = shotTick + dt
+		if shotTick > shotWait then
+			canShoot = true
+			shotTick = 0
+		end
+	end
+end
+
+-- Pauses game on focus lost
+function love.focus(f)
+	paused = not f
+end
+
+-- Checks for key presses
+function love.keypressed(key)
+	if key == 'p' then
+		paused = not paused
+	end
+end
+
+-- Update with respect to delta-time (dt)
+function love.update(dt)
+	if paused then
+		return
+	end
+
+	checkInput(dt)
+	checkShooting(dt)
 
 	-- update bullet positions
 	for k, v in ipairs(bullets) do
