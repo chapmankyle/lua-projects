@@ -4,9 +4,6 @@
 
 -- Load all items needed
 function love.load(arg)
-	-- create new world with no gravity
-	world = love.physics.newWorld(0, 0, true)
-
 	playerDim = 50	-- dimensions for the player img
 	enemyDim = 30
 	crosshairDim = 35
@@ -18,7 +15,7 @@ function love.load(arg)
 	bulletSpeed = 200
 
 	canShoot = true -- if player can shoot
-	shotWait = 0.3
+	rateOfFire = 0.3
 	shotTick = 0
 
 	-- player table
@@ -135,7 +132,7 @@ function checkShooting(dt)
 	-- checks if player can shoot
 	if not canShoot then
 		shotTick = shotTick + dt
-		if shotTick > shotWait then
+		if shotTick > rateOfFire then
 			canShoot = true
 			shotTick = 0
 		end
