@@ -14,8 +14,8 @@ local player = {
 	scale = 1
 }
 
--- loads a new player
-function player:load(x, y, speed, path, size)
+-- initializes a new player
+function player:init(x, y, speed, path, size)
 	self.x = x or 100
 	self.y = y or 100
 	self.speed = speed or 150
