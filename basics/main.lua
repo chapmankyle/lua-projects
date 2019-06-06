@@ -38,13 +38,18 @@ function love.load()
 	enemies = {}
 
 	-- creats new player
-	player:load(100, 100, 150, 'assets/person.png', playerSize)
+	player:init(100, 100, 150, 'assets/person.png', playerSize)
 
 	crosshair.img = love.graphics.newImage('assets/ch_w.png')
 	crosshair.scale = crosshairDim / crosshair.img:getWidth()
 
 	enemy.img = love.graphics.newImage('assets/enemy.png')
 	enemy.scale = enemyDim / enemy.img:getWidth()
+
+	local ico = love.image.newImageData('assets/logo.png')
+	love.window.setIcon(ico)
+
+	pauseFont = love.graphics.newFont('fonts/back-to-1982.regular.ttf', 30)
 
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	love.mouse.setVisible(false)
@@ -123,6 +128,7 @@ function love.keypressed(key)
 	-- checks for pause
 	if key == 'p' then
 		paused = not paused
+		if not paused then love.mouse.setVisible(false) end
 	end
 end
 
@@ -137,18 +143,8 @@ function love.update(dt)
 	updateBullets(dt)
 end
 
--- draw all updates on screen
-function love.draw()
-	local x, y = love.mouse.getPosition()
-	local enemySize = enemy.scale * enemy.img:getWidth()
-
-	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
-
-	-- draws player
-	player:draw()
-
-	love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.scale, enemy.scale)
-
+-- draws bullets onto the screen
+function drawBullets()
 	love.graphics.push("all")
 	love.graphics.setColor(255 / 255, 87 / 255, 34 / 255)
 	for k, v in ipairs(bullets) do
@@ -161,18 +157,51 @@ function love.draw()
 		end
 
 		-- collision detection
+		--[[
 		if checkCollision(v.x, v.y, bulletWidth, bulletHeight,
 				enemy.x, enemy.y, enemySize, enemySize) then
 			-- do collision detection
 		end
+		--]]
 	end
 	love.graphics.pop()
+end
 
-	love.graphics.draw(crosshair.img, x, y, 0, crosshair.scale, crosshair.scale)
+-- draw pause screen
+function drawPause()
+	love.graphics.push("all")
+	love.mouse.setVisible(true)
+
+	-- draw dim screen
+	love.graphics.setColor(0, 0, 0, 0.3)
+	love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.rectangle("fill", 30, 35, 360, 65)
+
+	love.graphics.setColor(124 / 255, 174 / 255, 255 / 255)
+	love.graphics.setFont(pauseFont)
+	love.graphics.print("PAUSED", 120, 50)
+
+	love.graphics.pop()
+end
+
+-- draw all updates on screen
+function love.draw()
+	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
+
+	-- draws player
+	player:draw()
+	love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.scale, enemy.scale)
+
+	drawBullets()
 
 	if paused then
-		love.graphics.print("PAUSED", 300, 20)
+		drawPause()
+	else
+		love.graphics.draw(crosshair.img, love.mouse.getX(), love.mouse.getY(),
+			0, crosshair.scale, crosshair.scale)
 	end
 
-	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
+	love.graphics.print("FPS: " .. love.timer.getFPS(), 5, 5)
 end
