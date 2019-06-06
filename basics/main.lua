@@ -2,9 +2,11 @@
 --
 -- @about Describes the game logic.
 
--- Load all items needed
-function love.load(arg)
-	playerDim = 50	-- dimensions for the player img
+-- load all entities
+function love.load()
+	player = require('entities/player')
+
+	playerSize = 50
 	enemyDim = 30
 	crosshairDim = 35
 
@@ -17,15 +19,6 @@ function love.load(arg)
 	canShoot = true -- if player can shoot
 	rateOfFire = 0.3
 	shotTick = 0
-
-	-- player table
-	player = {
-		x = 100,
-		y = 100,
-		speed = 150,
-		img = nil,
-		scale = 1
-	}
 
 	-- crosshair table
 	crosshair = {
@@ -44,8 +37,8 @@ function love.load(arg)
 	bullets = {}
 	enemies = {}
 
-	player.img = love.graphics.newImage('assets/person.png')
-	player.scale = playerDim / player.img:getWidth()
+	-- creats new player
+	player:load(100, 100, 150, 'assets/person.png', playerSize)
 
 	crosshair.img = love.graphics.newImage('assets/ch_w.png')
 	crosshair.scale = crosshairDim / crosshair.img:getWidth()
@@ -59,8 +52,8 @@ end
 
 -- adds a bullet into the bullet table
 function shoot(x, y)
-	local startX = player.x + (playerDim / 2)
-	local startY = player.y + (playerDim / 2)
+	local startX = player.x + (playerSize / 2)
+	local startY = player.y + (playerSize / 2)
 	local mouseX = x + (crosshairDim / 2)
 	local mouseY = y + (crosshairDim / 2)
 
@@ -84,31 +77,6 @@ function checkCollision(x1, y1, w1, h1, x2, y2, w2, h2)
 			x2 < x1 + w1 and
 			y1 < y2 + h2 and
 			y2 < y1 + h1
-end
-
--- checks for keystrokes
-function checkInput(dt)
-	-- check for up, down, left and right (or w, s, a and d)
-	if love.keyboard.isDown('up', 'w') then
-		if player.y > 0 then
-			player.y = player.y - (player.speed * dt)
-		end
-	end
-	if love.keyboard.isDown('down', 's') then
-		if player.y < (love.graphics.getHeight() - playerDim) then
-			player.y = player.y + (player.speed * dt)
-		end
-	end
-	if love.keyboard.isDown('left', 'a') then
-		if player.x > 0 then
-			player.x = player.x - (player.speed * dt)
-		end
-	end
-	if love.keyboard.isDown('right', 'd') then
-		if player.x < (love.graphics.getWidth() - playerDim) then
-			player.x = player.x + (player.speed * dt)
-		end
-	end
 end
 
 -- check for mouse presses
@@ -140,12 +108,12 @@ function updateBullets(dt)
 	end
 end
 
--- Pauses game on focus lost
+-- pauses game on focus lost
 function love.focus(f)
 	paused = not f
 end
 
--- Checks for key presses
+-- checks for key presses
 function love.keypressed(key)
 	-- checks for quitting
 	if key == 'escape' then
@@ -158,24 +126,27 @@ function love.keypressed(key)
 	end
 end
 
--- Update with respect to delta-time (dt)
+-- update entities with respect to delta-time (dt)
 function love.update(dt)
 	if paused then
 		return
 	end
 
-	checkInput(dt)
+	player:update(dt)
 	checkShooting(dt)
 	updateBullets(dt)
 end
 
--- Draw updates with respect to delta-time (dt)
-function love.draw(dt)
+-- draw all updates on screen
+function love.draw()
 	local x, y = love.mouse.getPosition()
 	local enemySize = enemy.scale * enemy.img:getWidth()
 
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
-	love.graphics.draw(player.img, player.x, player.y, 0, player.scale, player.scale)
+
+	-- draws player
+	player:draw()
+
 	love.graphics.draw(enemy.img, enemy.x, enemy.y, 0, enemy.scale, enemy.scale)
 
 	love.graphics.push("all")
