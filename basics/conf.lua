@@ -15,7 +15,7 @@ function love.conf(t)
 
 	-- window
 	t.window.title = "Game Basics"
-	t.window.icon = nil
+	t.window.icon = "assets/logo.png"
 	t.window.width = 800
 	t.window.height = 600
 	t.window.borderless = false
