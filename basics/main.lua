@@ -42,6 +42,7 @@ function love.load(arg)
 	}
 
 	bullets = {}
+	enemies = {}
 
 	player.img = love.graphics.newImage('assets/person.png')
 	player.scale = playerDim / player.img:getWidth()
@@ -58,13 +59,10 @@ end
 
 -- adds a bullet into the bullet table
 function shoot(x, y)
-	local playerSize = player.scale * player.img:getWidth()
-	local mouseSize = crosshair.scale * crosshair.img:getWidth()
-
-	local startX = player.x + (playerSize / 2)
-	local startY = player.y + (playerSize / 2)
-	local mouseX = x + (mouseSize / 2)
-	local mouseY = y + (mouseSize / 2)
+	local startX = player.x + (playerDim / 2)
+	local startY = player.y + (playerDim / 2)
+	local mouseX = x + (crosshairDim / 2)
+	local mouseY = y + (crosshairDim / 2)
 
 	local angle = math.atan2((mouseY - startY), (mouseX - startX))
 
@@ -90,11 +88,6 @@ end
 
 -- checks for keystrokes
 function checkInput(dt)
-	-- check for quitting
-	if love.keyboard.isDown('escape') then
-		love.event.quit()
-	end
-
 	-- check for up, down, left and right (or w, s, a and d)
 	if love.keyboard.isDown('up', 'w') then
 		if player.y > 0 then
@@ -139,6 +132,14 @@ function checkShooting(dt)
 	end
 end
 
+-- updates bullet positions
+function updateBullets(dt)
+	for k, v in ipairs(bullets) do
+		v.x = v.x + (v.dx * dt)
+		v.y = v.y + (v.dy * dt)
+	end
+end
+
 -- Pauses game on focus lost
 function love.focus(f)
 	paused = not f
@@ -146,6 +147,12 @@ end
 
 -- Checks for key presses
 function love.keypressed(key)
+	-- checks for quitting
+	if key == 'escape' then
+		love.event.push('quit')
+	end
+
+	-- checks for pause
 	if key == 'p' then
 		paused = not paused
 	end
@@ -159,18 +166,12 @@ function love.update(dt)
 
 	checkInput(dt)
 	checkShooting(dt)
-
-	-- update bullet positions
-	for k, v in ipairs(bullets) do
-		v.x = v.x + (v.dx * dt)
-		v.y = v.y + (v.dy * dt)
-	end
+	updateBullets(dt)
 end
 
 -- Draw updates with respect to delta-time (dt)
 function love.draw(dt)
 	local x, y = love.mouse.getPosition()
-	local FPS = love.timer.getFPS()
 	local enemySize = enemy.scale * enemy.img:getWidth()
 
 	love.graphics.setBackgroundColor(96 / 255, 125 / 255, 139 / 255, 1.0)
@@ -202,5 +203,5 @@ function love.draw(dt)
 		love.graphics.print("PAUSED", 300, 20)
 	end
 
-	love.graphics.print("FPS: " .. tostring(FPS), 10, 10)
+	love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
 end
