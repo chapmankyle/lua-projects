@@ -1,4 +1,4 @@
--- entities/self.lua
+-- entities/player.lua
 --
 -- @about Describes the player entity.
 
