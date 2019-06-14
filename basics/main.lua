@@ -37,7 +37,26 @@ function love.load()
 	bullets = {}
 	enemies = {}
 
-	-- creats new player
+	-- options when paused
+	pauseOpts = {
+		continue = function()
+			return "Continue", 30, 200
+		end,
+		newGame = function()
+			return "New Game", 30, 240
+		end,
+		options = function()
+			return "Options", 30, 280
+		end,
+		quitMain = function()
+			return "Quit to Main Menu", 30, 320
+		end,
+		quitDesktop = function()
+			return "Quit to Desktop", 30, 360
+		end
+	}
+
+	-- entities
 	player:init(100, 100, 150, 'assets/person.png', playerSize)
 
 	crosshair.img = love.graphics.newImage('assets/ch_w.png')
@@ -46,11 +65,15 @@ function love.load()
 	enemy.img = love.graphics.newImage('assets/enemy.png')
 	enemy.scale = enemyDim / enemy.img:getWidth()
 
+	-- window icon
 	local ico = love.image.newImageData('assets/logo.png')
 	love.window.setIcon(ico)
 
+	-- fonts
+	defaultFont = love.graphics.getFont()
 	pauseFont = love.graphics.newFont('fonts/back-to-1982.regular.ttf', 30)
 
+	-- miscellaneous
 	love.graphics.setDefaultFilter('nearest', 'nearest')
 	love.mouse.setVisible(false)
 end
@@ -113,6 +136,19 @@ function updateBullets(dt)
 	end
 end
 
+-- does actions relating to pausing the game
+function doPause()
+	paused = not paused
+	if not paused then love.mouse.setVisible(false) end
+end
+
+-- check for mouse click on one of the options buttons
+function checkOptionClick()
+	if love.mouse.isDown('1') then
+		print(love.mouse.getPosition())
+	end
+end
+
 -- pauses game on focus lost
 function love.focus(f)
 	paused = not f
@@ -127,14 +163,14 @@ function love.keypressed(key)
 
 	-- checks for pause
 	if key == 'p' then
-		paused = not paused
-		if not paused then love.mouse.setVisible(false) end
+		doPause()
 	end
 end
 
 -- update entities with respect to delta-time (dt)
 function love.update(dt)
 	if paused then
+		checkOptionClick()
 		return
 	end
 
@@ -176,12 +212,22 @@ function drawPause()
 	love.graphics.setColor(0, 0, 0, 0.3)
 	love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
 
+	-- draw paused background
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.rectangle("fill", 30, 35, 360, 65)
 
+	-- draw paused text
 	love.graphics.setColor(124 / 255, 174 / 255, 255 / 255)
 	love.graphics.setFont(pauseFont)
 	love.graphics.print("PAUSED", 120, 50)
+
+	-- draw options
+	love.graphics.setFont(defaultFont)
+	love.graphics.print(pauseOpts.continue())
+	love.graphics.print(pauseOpts.newGame())
+	love.graphics.print(pauseOpts.options())
+	love.graphics.print(pauseOpts.quitMain())
+	love.graphics.print(pauseOpts.quitDesktop())
 
 	love.graphics.pop()
 end
