@@ -39,21 +39,46 @@ function love.load()
 
 	-- options when paused
 	pauseOpts = {
-		continue = function()
-			return "Continue", 30, 200
-		end,
-		newGame = function()
-			return "New Game", 30, 240
-		end,
-		options = function()
-			return "Options", 30, 280
-		end,
-		quitMain = function()
-			return "Quit to Main Menu", 30, 320
-		end,
-		quitDesktop = function()
-			return "Quit to Desktop", 30, 360
-		end
+		continue = {
+			text = "Continue",
+			x = 30,
+			y = 200,
+			show = function()
+				return "Continue", 30, 200
+			end
+		},
+		newGame = {
+			text = "New Game",
+			x = 30,
+			y = 240,
+			show = function()
+				return "New Game", 30, 240
+			end
+		},
+		options = {
+			text = "Options",
+			x = 30,
+			y = 280,
+			show = function()
+				return "Options", 30, 280
+			end
+		},
+		quitMain = {
+			text = "Quit to Main Menu",
+			x = 30,
+			y = 320,
+			show = function()
+				return "Quit to Main Menu", 30, 320
+			end,
+		},
+		quitDesktop = {
+			text = "Quit to Desktop",
+			x = 30,
+			y = 360,
+			show = function()
+				return "Quit to Desktop", 30, 360
+			end
+		}
 	}
 
 	-- entities
@@ -75,6 +100,10 @@ function love.load()
 
 	-- miscellaneous
 	love.graphics.setDefaultFilter('nearest', 'nearest')
+
+	handCursor = love.mouse.getSystemCursor('hand')
+	defCursor = love.mouse.getSystemCursor('arrow')
+
 	love.mouse.setVisible(false)
 end
 
@@ -142,10 +171,78 @@ function doPause()
 	if not paused then love.mouse.setVisible(false) end
 end
 
+-- checks input on hover
+function checkOptionHover()
+	love.mouse.setCursor(defCursor)
+
+	local ctText, ctX, ctY = pauseOpts.continue.show()
+	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ctX, ctY,
+			defaultFont:getWidth(ctText), defaultFont:getHeight(ctText)) then
+		love.mouse.setCursor(handCursor)
+	end
+
+	local ngText, ngX, ngY = pauseOpts.newGame.show()
+	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ngX, ngY,
+			defaultFont:getWidth(ngText), defaultFont:getHeight(ngText)) then
+		love.mouse.setCursor(handCursor)
+	end
+
+	local optText, optX, optY = pauseOpts.options.show()
+	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, optX, optY,
+			defaultFont:getWidth(optText), defaultFont:getHeight(optText)) then
+		love.mouse.setCursor(handCursor)
+	end
+
+	local qmText, qmX, qmY = pauseOpts.quitMain.show()
+	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qmX, qmY,
+			defaultFont:getWidth(qmText), defaultFont:getHeight(qmText)) then
+		love.mouse.setCursor(handCursor)
+	end
+
+	local qdText, qdX, qdY = pauseOpts.quitDesktop.show()
+	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qdX, qdY,
+			defaultFont:getWidth(qdText), defaultFont:getHeight(qdText)) then
+		love.mouse.setCursor(handCursor)
+	end
+end
+
 -- check for mouse click on one of the options buttons
 function checkOptionClick()
 	if love.mouse.isDown('1') then
-		print(love.mouse.getPosition())
+		local ctText, ctX, ctY = pauseOpts.continue.show()
+		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ctX, ctY,
+				defaultFont:getWidth(ctText), defaultFont:getHeight(ctText)) then
+			doPause()
+			canShoot = false
+			return
+		end
+
+		local ngText, ngX, ngY = pauseOpts.newGame.show()
+		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ngX, ngY,
+				defaultFont:getWidth(ngText), defaultFont:getHeight(ngText)) then
+			print("Pressed New Game")
+			return
+		end
+
+		local optText, optX, optY = pauseOpts.options.show()
+		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, optX, optY,
+				defaultFont:getWidth(optText), defaultFont:getHeight(optText)) then
+			print("Pressed Options")
+			return
+		end
+
+		local qmText, qmX, qmY = pauseOpts.quitMain.show()
+		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qmX, qmY,
+				defaultFont:getWidth(qmText), defaultFont:getHeight(qmText)) then
+			print("Pressed Quit to Main Menu")
+			return
+		end
+
+		local qdText, qdX, qdY = pauseOpts.quitDesktop.show()
+		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qdX, qdY,
+				defaultFont:getWidth(qdText), defaultFont:getHeight(qdText)) then
+			love.event.push('quit')
+		end
 	end
 end
 
@@ -170,6 +267,7 @@ end
 -- update entities with respect to delta-time (dt)
 function love.update(dt)
 	if paused then
+		checkOptionHover()
 		checkOptionClick()
 		return
 	end
@@ -223,11 +321,11 @@ function drawPause()
 
 	-- draw options
 	love.graphics.setFont(defaultFont)
-	love.graphics.print(pauseOpts.continue())
-	love.graphics.print(pauseOpts.newGame())
-	love.graphics.print(pauseOpts.options())
-	love.graphics.print(pauseOpts.quitMain())
-	love.graphics.print(pauseOpts.quitDesktop())
+	love.graphics.print(pauseOpts.continue.show())
+	love.graphics.print(pauseOpts.newGame.show())
+	love.graphics.print(pauseOpts.options.show())
+	love.graphics.print(pauseOpts.quitMain.show())
+	love.graphics.print(pauseOpts.quitDesktop.show())
 
 	love.graphics.pop()
 end
