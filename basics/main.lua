@@ -146,8 +146,8 @@ function doPause()
 	if not paused then love.mouse.setVisible(false) end
 end
 
--- checks input on hover
-function checkOptionHover()
+-- check for mouse click on one of the options buttons
+function checkClick()
 	local ctText, ctX, ctY = pauseOpts.continue()
 	local ngText, ngX, ngY = pauseOpts.newGame()
 	local optText, optX, optY = pauseOpts.options()
@@ -157,61 +157,46 @@ function checkOptionHover()
 	if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ctX, ctY,
 			defaultFont:getWidth(ctText), defaultFont:getHeight(ctText)) then
 		love.mouse.setCursor(handCursor)
+
+		-- if clicked "continue"
+		if love.mouse.isDown('1') then
+			doPause()
+			canShoot = false
+		end
 	elseif checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ngX, ngY,
 			defaultFont:getWidth(ngText), defaultFont:getHeight(ngText)) then
 		love.mouse.setCursor(handCursor)
+
+		-- if clicked "new game"
+		if love.mouse.isDown('1') then
+			print("Clicked New Game")
+		end
 	elseif checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, optX, optY,
 			defaultFont:getWidth(optText), defaultFont:getHeight(optText)) then
 		love.mouse.setCursor(handCursor)
+
+		-- if clicked "options"
+		if love.mouse.isDown('1') then
+			print("Clicked Options")
+		end
 	elseif checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qmX, qmY,
 			defaultFont:getWidth(qmText), defaultFont:getHeight(qmText)) then
 		love.mouse.setCursor(handCursor)
+
+		-- if clicked "quit to main menu"
+		if love.mouse.isDown('1') then
+			print("Clicked Quit to Main Menu")
+		end
 	elseif checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qdX, qdY,
 			defaultFont:getWidth(qdText), defaultFont:getHeight(qdText)) then
 		love.mouse.setCursor(handCursor)
-	else
-		love.mouse.setCursor(defCursor)
-	end
-end
 
--- check for mouse click on one of the options buttons
-function checkOptionClick()
-	if love.mouse.isDown('1') then
-		local ctText, ctX, ctY = pauseOpts.continue()
-		local ngText, ngX, ngY = pauseOpts.newGame()
-		local optText, optX, optY = pauseOpts.options()
-		local qmText, qmX, qmY = pauseOpts.quitMain()
-		local qdText, qdX, qdY = pauseOpts.quitDesktop()
-
-		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ctX, ctY,
-				defaultFont:getWidth(ctText), defaultFont:getHeight(ctText)) then
-			doPause()
-			canShoot = false
-			return
-		end
-
-		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, ngX, ngY,
-				defaultFont:getWidth(ngText), defaultFont:getHeight(ngText)) then
-			print("Pressed New Game")
-			return
-		end
-
-		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, optX, optY,
-				defaultFont:getWidth(optText), defaultFont:getHeight(optText)) then
-			print("Pressed Options")
-			return
-		end
-
-		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qmX, qmY,
-				defaultFont:getWidth(qmText), defaultFont:getHeight(qmText)) then
-			print("Pressed Quit to Main Menu")
-			return
-		end
-
-		if checkCollision(love.mouse.getX(), love.mouse.getY(), 10, 10, qdX, qdY,
-				defaultFont:getWidth(qdText), defaultFont:getHeight(qdText)) then
+		-- if clicked "quit to desktop"
+		if love.mouse.isDown('1') then
 			love.event.push('quit')
 		end
+	else
+		love.mouse.setCursor(defCursor)
 	end
 end
 
@@ -236,8 +221,7 @@ end
 -- update entities with respect to delta-time (dt)
 function love.update(dt)
 	if paused then
-		checkOptionHover()
-		checkOptionClick()
+		checkClick()
 		return
 	end
 
